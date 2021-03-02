@@ -19,18 +19,19 @@ package com.example.androiddevchallenge
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -101,12 +102,45 @@ fun ListOfPuppies(navController: NavController) {
 @Composable
 fun Details(navController: NavController, puppyId: String) {
     val listOfPuppies = pupiesList
-    //val puppyId = puppyId.toInt()
-    Column() {
-        //Text(text = "Hey: ${puppyId.toString()}")
-        Text(text = "Hey: ${puppyId}")
-        //Text(text = "${listOfPuppies[puppyId].description}")
+    val puppyId = puppyId.toInt()
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .padding(8.dp),elevation = 8.dp){
+        Column(horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Surface(modifier = Modifier
+                .requiredHeight(260.dp)
+                .clip(RoundedCornerShape(20.dp)), elevation = 10.dp) {
+
+
+            Image(painter = painterResource(id = listOfPuppies[puppyId].image),
+            contentDescription = "${listOfPuppies[puppyId].name}",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                //.size(100.dp)
+                //.requiredHeight(260.dp)
+                .fillMaxWidth(1f)
+                .clip(RoundedCornerShape(20.dp))
+                //.border(2.dp, Color.Green, RoundedCornerShape(20.dp))
+            )}
+            Text(text = "${listOfPuppies[puppyId].name}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.h2, modifier = Modifier.padding(16.dp))
+            Text(text = "${listOfPuppies[puppyId].breed}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle1)
+            Text(text = "Age: ${listOfPuppies[puppyId].age}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle1, modifier = Modifier.padding(bottom = 16.dp))
+            Text(text = "${listOfPuppies[puppyId].description}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2, modifier = Modifier.padding(8.dp))
+            Divider(modifier = Modifier
+                .padding(16.dp)
+            )
+            Row() {
+                val selected = remember { mutableStateOf(false)}
+                Button(onClick = {selected.value = !selected.value}, modifier = Modifier.background(color = if (selected.value) Color.Blue else Color.Gray)) {
+                    Text("Adopt")
+                }
+            }
+
+        }
     }
+
 
 }
 
@@ -116,7 +150,7 @@ fun PuppyListItem(puppy: Puppy, modifier: Modifier, onClicked: (String) -> Unit)
     Row(verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(16.dp)
-            .clickable( onClick = { onClicked(puppy.id.toString()) })
+            .clickable(onClick = { onClicked(puppy.id.toString()) })
     ) {
 
 
