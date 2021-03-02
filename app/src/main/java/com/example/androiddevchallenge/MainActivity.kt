@@ -28,10 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -68,9 +65,9 @@ fun MyApp() {
         NavHost(navController, startDestination = "list_of_puppies") {
             composable("list_of_puppies") { ListOfPuppies(navController) }
             composable("details/{Id}",
-                arguments = listOf(navArgument("Id") { type = NavType.IntType}))
+                arguments = listOf(navArgument("Id") { type = NavType.StringType}))
             { backStackEntry ->
-                Details(navController, puppyId = backStackEntry.arguments?.getString("Id") ?: "2")
+                Details(navController = navController, puppyId = backStackEntry.arguments?.getString("Id") ?: "2")
             }
         }
     }
@@ -87,8 +84,12 @@ fun ListOfPuppies(navController: NavController) {
                     PuppyListItem(
                         puppy = item,
                         modifier = Modifier.fillMaxWidth(),
-                        onClicked = {site -> navController.navigate("details/{2}")}
+                        onClicked = {puppyId -> navController.navigate("details/${puppyId}")}
 
+                    )
+                    Divider(
+                        modifier = Modifier
+                            .padding(start = 114.dp, end = 8.dp)
                     )
                 }
             }
@@ -100,21 +101,22 @@ fun ListOfPuppies(navController: NavController) {
 @Composable
 fun Details(navController: NavController, puppyId: String) {
     val listOfPuppies = pupiesList
-    val puppyId = puppyId.toInt()
+    //val puppyId = puppyId.toInt()
     Column() {
-        Text(text = "Hey: ${puppyId.toString()}")
-        Text(text = "${listOfPuppies[puppyId].description}")
+        //Text(text = "Hey: ${puppyId.toString()}")
+        Text(text = "Hey: ${puppyId}")
+        //Text(text = "${listOfPuppies[puppyId].description}")
     }
 
 }
 
 
 @Composable
-fun PuppyListItem(puppy: Puppy, modifier: Modifier, onClicked: (Int) -> Unit) {
+fun PuppyListItem(puppy: Puppy, modifier: Modifier, onClicked: (String) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .padding(8.dp)
-            .clickable( onClick = { onClicked(puppy.id) })
+            .padding(16.dp)
+            .clickable( onClick = { onClicked(puppy.id.toString()) })
     ) {
 
 
@@ -125,7 +127,7 @@ fun PuppyListItem(puppy: Puppy, modifier: Modifier, onClicked: (Int) -> Unit) {
             contentDescription = "${puppy.name}",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(80.dp)
+                .size(100.dp)
                 .clip(CircleShape)
                 .border(2.dp, Color.Gray, CircleShape)
         )
@@ -136,11 +138,11 @@ fun PuppyListItem(puppy: Puppy, modifier: Modifier, onClicked: (Int) -> Unit) {
             .padding(8.dp)
             //.background(Color.Green)
         ) {
-            Text(text = "${puppy.id.toString()} ${puppy.name}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.h5 )
+            Text(text = "${puppy.name}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.h4, modifier = Modifier.padding(start = 8.dp) )
             Row() {
-                Text(text = puppy.breed, fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2, modifier = Modifier.padding(8.dp))
-                Text(text = puppy.sex, fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2)
-                Text(text = puppy.age.toString(), fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2, modifier = Modifier.padding(8.dp))
+                Text(text = puppy.breed, fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle1, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
+                Text(text = puppy.sex, fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle1)
+                Text(text = "Age: ${puppy.age.toString()}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle1, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
             }
 
         }
