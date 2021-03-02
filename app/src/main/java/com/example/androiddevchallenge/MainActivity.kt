@@ -21,10 +21,12 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
@@ -43,10 +45,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigate
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.compose.*
 import com.example.androiddevchallenge.ui.theme.MyTheme
 
 class MainActivity : AppCompatActivity() {
@@ -67,8 +67,11 @@ fun MyApp() {
         val navController = rememberNavController()
         NavHost(navController, startDestination = "list_of_puppies") {
             composable("list_of_puppies") { ListOfPuppies(navController) }
-            composable("details/{puppieId}") { id ->
-                Details(navController, id.arguments?.getInt("puppieId")!!) }
+            composable("details/{Id}",
+                arguments = listOf(navArgument("Id") { type = NavType.IntType}))
+            { backStackEntry ->
+                Details(navController, puppyId = backStackEntry.arguments?.getString("Id") ?: "2")
+            }
         }
     }
 }
@@ -81,10 +84,10 @@ fun ListOfPuppies(navController: NavController) {
         Column() {
             LazyColumn(Modifier.fillMaxWidth()) {
                 items(listOfPuppies) { item ->
-                    PuppieListItem(
-                        puppie = item,
+                    PuppyListItem(
+                        puppy = item,
                         modifier = Modifier.fillMaxWidth(),
-                        navController
+                        onClicked = {site -> navController.navigate("details/{2}")}
 
                     )
                 }
@@ -95,44 +98,49 @@ fun ListOfPuppies(navController: NavController) {
 }
 
 @Composable
-fun Details(navController: NavController, puppieId: Int) {
+fun Details(navController: NavController, puppyId: String) {
     val listOfPuppies = pupiesList
+    val puppyId = puppyId.toInt()
     Column() {
-        Text(text = "Hey: ${listOfPuppies[puppieId].name}")
-        Text(text = "${listOfPuppies[puppieId].description}")
+        Text(text = "Hey: ${puppyId.toString()}")
+        Text(text = "${listOfPuppies[puppyId].description}")
     }
 
 }
 
 
 @Composable
-fun PuppieListItem(puppie: Puppie, modifier: Modifier, navController: NavController) {
+fun PuppyListItem(puppy: Puppy, modifier: Modifier, onClicked: (Int) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(8.dp)
-            .clickable { navController.navigate("details/{${puppie.id}}") }) {
+            .clickable( onClick = { onClicked(puppy.id) })
+    ) {
 
-        val imageModifier = Modifier
-            .size(80.dp)
 
             //.clip(shape = RoundedCornerShape(4.dp))
 
 
-        Image(painter = painterResource(id = puppie.image),
-            contentDescription = "",
-            modifier = imageModifier,
-            contentScale = ContentScale.Crop)
+        Image(painter = painterResource(id = puppy.image),
+            contentDescription = "${puppy.name}",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(80.dp)
+                .clip(CircleShape)
+                .border(2.dp, Color.Gray, CircleShape)
+        )
+
 
         Column(modifier = Modifier
             .fillMaxWidth(1f)
             .padding(8.dp)
             //.background(Color.Green)
         ) {
-            Text(text = "${puppie.id.toString()} ${puppie.name}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.h5 )
+            Text(text = "${puppy.id.toString()} ${puppy.name}", fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.h5 )
             Row() {
-                Text(text = puppie.breed, fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2, modifier = Modifier.padding(8.dp))
-                Text(text = puppie.sex, fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2)
-                Text(text = puppie.age.toString(), fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2, modifier = Modifier.padding(8.dp))
+                Text(text = puppy.breed, fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2, modifier = Modifier.padding(8.dp))
+                Text(text = puppy.sex, fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2)
+                Text(text = puppy.age.toString(), fontFamily = FontFamily.SansSerif, style = MaterialTheme.typography.subtitle2, modifier = Modifier.padding(8.dp))
             }
 
         }
@@ -166,20 +174,20 @@ val puppiesImages = listOf(
     R.drawable.kieran_white_nkn25ufgfkq_unsplash
 )
 
-val pupiesList = listOf<Puppie>(
-    Puppie(1, "Ash", "Armat", 5, "Male", puppiesImages[0], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(2, "David", "Harrier", 6, "Male", puppiesImages[1], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(3, "Dustin", "Armat", 10, "Female", puppiesImages[2], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(4, "James", "Kokoni", 2, "Male", puppiesImages[3], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(5, "Kieran", "Koolie", 11, "Female", puppiesImages[4], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(6, "Ash", "Koolie", 2, "Male", puppiesImages[0], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(7, "David", "Limer", 12, "Male", puppiesImages[1], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(8, "Dustin", "Cur", 3, "Female", puppiesImages[2], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(9, "James", "Kokoni", 3, "Male", puppiesImages[3], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
-    Puppie(10, "Kieran", "Whippet", 4, "Female", puppiesImages[4], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+val pupiesList = listOf<Puppy>(
+    Puppy(1, "Ash", "Armat", 5, "Male", puppiesImages[0], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(2, "David", "Harrier", 6, "Male", puppiesImages[1], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(3, "Dustin", "Armat", 10, "Female", puppiesImages[2], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(4, "James", "Kokoni", 2, "Male", puppiesImages[3], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(5, "Kieran", "Koolie", 11, "Female", puppiesImages[4], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(6, "Ash", "Koolie", 2, "Male", puppiesImages[0], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(7, "David", "Limer", 12, "Male", puppiesImages[1], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(8, "Dustin", "Cur", 3, "Female", puppiesImages[2], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(9, "James", "Kokoni", 3, "Male", puppiesImages[3], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."),
+    Puppy(10, "Kieran", "Whippet", 4, "Female", puppiesImages[4], "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
 )
 
-data class Puppie(
+data class Puppy(
     val id: Int,
     val name: String,
     val breed: String,
