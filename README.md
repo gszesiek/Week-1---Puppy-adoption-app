@@ -7,12 +7,15 @@
 
 ## :scroll: Description
 <!--- Describe your app in one or two sentences -->
+A very simple and intuitive application that allows you to select a dog for adoption.
 
 
 ## :bulb: Motivation and Context
 <!--- Optionally point readers to interesting parts of your submission. -->
+The user can easily filter the list by breed and sex.
 <!--- What are you especially proud of? -->
-
+Forced a recomposition after updating the list.
+Navigation component :)
 
 ## :camera_flash: Screenshots
 <!-- You can add more screenshots here if you like -->
